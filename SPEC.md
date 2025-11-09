@@ -644,10 +644,10 @@ cancelled (キャンセル) or 契約終了
 
 ### 4.1 技術スタック
 
-#### 4.1.1 フロントエンド
-- **フレームワーク**: Next.js 14 (App Router)
-  - React 18
+#### 4.1.1 フロントエンド（React SPA）
+- **フレームワーク**: React 18
   - TypeScript 5
+  - Vite（ビルドツール）
 - **スタイリング**:
   - Tailwind CSS 3
   - shadcn/ui（UIコンポーネントライブラリ）
@@ -657,53 +657,82 @@ cancelled (キャンセル) or 契約終了
 - **フォーム管理**:
   - React Hook Form
   - Zod（バリデーション）
+- **ルーティング**:
+  - React Router v6
 - **HTTP通信**:
   - Axios
 - **その他**:
   - date-fns（日付処理）
   - recharts（グラフ表示）
 
-#### 4.1.2 バックエンド
-- **ランタイム**: Node.js 20 LTS
-- **フレームワーク**: Next.js 14 API Routes / Express.js
-- **言語**: TypeScript 5
-- **認証**:
-  - NextAuth.js (Auth.js)
-  - JWT
-  - bcrypt（パスワードハッシュ化）
-- **バリデーション**: Zod
-- **ORM**: Prisma
-- **その他**:
-  - node-cron（バッチジョブ）
-  - nodemailer（メール送信）
+#### 4.1.2 バックエンド（Java EE）
+- **プラットフォーム**: Jakarta EE 10 / Java EE 8
+- **Java バージョン**: Java 17 LTS
+- **アプリケーションサーバー**:
+  - WildFly 27+ / Payara 6+ / GlassFish 7+
+- **主要仕様**:
+  - **JAX-RS 3.1** (RESTful API)
+  - **JPA 3.1** (Hibernate 実装)
+  - **CDI 4.0** (依存性注入)
+  - **Bean Validation 3.0**
+  - **JSON-B 3.0** (JSON処理)
+- **セキュリティ**:
+  - Jakarta Security
+  - JWT (jjwt ライブラリ)
+  - BCrypt (パスワードハッシュ化)
+- **バッチ処理**:
+  - Jakarta Batch / Quartz Scheduler
+- **メール送信**:
+  - Jakarta Mail
+- **ビルドツール**:
+  - Maven 3.9+
 
 #### 4.1.3 データベース
 - **メインDB**: PostgreSQL 16
-- **キャッシュ**: Redis 7
-  - セッション管理
-  - API レートリミット
-  - 外部API呼び出しキャッシュ
+- **JDBCドライバー**: PostgreSQL JDBC Driver
+- **接続プール**: HikariCP / アプリケーションサーバー標準
+- **マイグレーション**: Flyway / Liquibase
 
 #### 4.1.4 インフラ・デプロイ
-- **ホスティング**: Vercel（推奨）または AWS
-- **データベースホスティング**:
-  - Vercel Postgres / Supabase / AWS RDS
-- **ファイルストレージ**: AWS S3（必要に応じて）
-- **CI/CD**: GitHub Actions
+- **フロントエンド**:
+  - ホスティング: Vercel / Netlify / AWS S3 + CloudFront
+  - CI/CD: GitHub Actions
+- **バックエンド**:
+  - アプリケーションサーバー: WildFly on AWS EC2 / Docker
+  - コンテナ化: Docker + Docker Compose
+  - オーケストレーション: Kubernetes（オプション）
+- **データベース**:
+  - AWS RDS PostgreSQL / オンプレミス PostgreSQL
 - **モニタリング**:
-  - Vercel Analytics
-  - Sentry（エラートラッキング）
+  - Application Performance Monitoring: New Relic / Datadog
+  - ログ管理: ELK Stack (Elasticsearch, Logstash, Kibana)
+  - エラートラッキング: Sentry
 
 #### 4.1.5 開発ツール
-- **パッケージマネージャー**: pnpm
+
+**フロントエンド**:
+- **パッケージマネージャー**: npm / yarn
 - **Linter/Formatter**:
   - ESLint
   - Prettier
 - **テスト**:
-  - Jest（ユニットテスト）
+  - Vitest（ユニットテスト）
+  - React Testing Library
   - Playwright（E2Eテスト）
 - **型チェック**: TypeScript
-- **Git Hooks**: Husky + lint-staged
+
+**バックエンド**:
+- **IDE**: IntelliJ IDEA / Eclipse / VS Code
+- **ビルドツール**: Maven
+- **テスト**:
+  - JUnit 5
+  - Mockito
+  - Arquillian（統合テスト）
+  - REST Assured（APIテスト）
+- **コード品質**:
+  - SonarQube
+  - Checkstyle
+  - SpotBugs
 
 ### 4.2 システムアーキテクチャ
 
@@ -711,56 +740,82 @@ cancelled (キャンセル) or 契約終了
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                        クライアント層                          │
+│                    フロントエンド層（SPA）                     │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │  Next.js Frontend (React + TypeScript)              │   │
-│  │  - ページコンポーネント                               │   │
-│  │  - UIコンポーネント (shadcn/ui)                      │   │
-│  │  - 状態管理 (Zustand + React Query)                 │   │
+│  │  React 18 + TypeScript (Vite)                       │   │
+│  │  ┌────────────────────────────────────────────┐     │   │
+│  │  │  Pages / Components                        │     │   │
+│  │  │  - Login, Dashboard, Contracts, Rewards    │     │   │
+│  │  └────────────────────────────────────────────┘     │   │
+│  │  ┌────────────────────────────────────────────┐     │   │
+│  │  │  State Management                          │     │   │
+│  │  │  - Zustand (Global State)                  │     │   │
+│  │  │  - React Query (Server State/Cache)        │     │   │
+│  │  └────────────────────────────────────────────┘     │   │
+│  │  ┌────────────────────────────────────────────┐     │   │
+│  │  │  HTTP Client (Axios)                       │     │   │
+│  │  │  - API リクエスト送信                       │     │   │
+│  │  │  - JWT トークン管理                         │     │   │
+│  │  │  - エラーハンドリング                        │     │   │
+│  │  └────────────────────────────────────────────┘     │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
-                            ↕ HTTPS
+                            ↕ HTTPS / REST API
+                      (JSON Request/Response)
 ┌─────────────────────────────────────────────────────────────┐
-│                       アプリケーション層                       │
+│              バックエンド層（Java EE アプリケーション）          │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │  Next.js API Routes / Express.js                    │   │
+│  │  JAX-RS Resources (REST API Endpoints)              │   │
 │  │  ┌────────────┐  ┌────────────┐  ┌──────────────┐  │   │
-│  │  │  認証API   │  │  会員API   │  │  契約API     │  │   │
+│  │  │ AuthResource│  │UserResource│  │ContractRes.  │  │   │
+│  │  │  /auth/*   │  │ /users/*   │  │ /contracts/* │  │   │
 │  │  └────────────┘  └────────────┘  └──────────────┘  │   │
 │  │  ┌────────────┐  ┌────────────┐  ┌──────────────┐  │   │
-│  │  │  報酬API   │  │  通知API   │  │  Webhook API │  │   │
+│  │  │RewardRes.  │  │NotifyRes.  │  │ WebhookRes.  │  │   │
+│  │  │ /rewards/* │  │ /notif./*  │  │ /webhooks/*  │  │   │
 │  │  └────────────┘  └────────────┘  └──────────────┘  │   │
 │  └──────────────────────────────────────────────────────┘   │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │  ビジネスロジック層                                    │   │
-│  │  - 認証サービス                                        │   │
-│  │  - 契約管理サービス                                    │   │
-│  │  - 報酬計算サービス                                    │   │
-│  │  - 通知サービス                                        │   │
-│  │  - 外部連携サービス                                    │   │
+│  │  Services (CDI Beans)                                │   │
+│  │  - AuthService                                       │   │
+│  │  - UserService                                       │   │
+│  │  - ContractService                                   │   │
+│  │  - RewardService                                     │   │
+│  │  - NotificationService                               │   │
+│  │  - ExternalApiService                                │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Repositories (JPA / Hibernate)                      │   │
+│  │  - UserRepository                                    │   │
+│  │  - ContractRepository                                │   │
+│  │  - PlanRepository                                    │   │
+│  │  - RewardRepository                                  │   │
+│  │  - NotificationRepository                            │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │  Security / Filters                                  │   │
+│  │  - JWT Authentication Filter                         │   │
+│  │  - CORS Filter                                       │   │
+│  │  - Exception Mappers                                 │   │
 │  └──────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────┘
-                    ↕                        ↕ HTTPS
+                    ↕ JDBC                     ↕ HTTPS
 ┌──────────────────────────────┐   ┌────────────────────────┐
-│       データ層                │   │   外部システム         │
+│       データベース層           │   │   外部システム         │
 │  ┌────────────────────────┐  │   │  ┌──────────────────┐ │
-│  │  PostgreSQL            │  │   │  │  承認システムAPI  │ │
+│  │  PostgreSQL 16         │  │   │  │  承認システムAPI  │ │
 │  │  - users               │  │   │  │  - 契約送信       │ │
 │  │  - contracts           │  │   │  │  - ステータス照会 │ │
 │  │  - plans               │  │   │  └──────────────────┘ │
-│  │  - rewards             │  │   └────────────────────────┘
+│  │  - plan_options        │  │   └────────────────────────┘
+│  │  - rewards             │  │
 │  │  - notifications       │  │
-│  └────────────────────────┘  │
-│  ┌────────────────────────┐  │
-│  │  Redis                 │  │
-│  │  - セッション           │  │
-│  │  - キャッシュ           │  │
-│  │  - ジョブキュー         │  │
+│  │  - external_sync_logs  │  │
 │  └────────────────────────┘  │
 └──────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
-│                       バッチ処理層                            │
+│              バッチ処理層（Jakarta Batch / Quartz）            │
 │  - ステータス同期ジョブ (5分ごと)                             │
 │  - 報酬集計ジョブ (日次)                                      │
 │  - 通知送信ジョブ                                             │
@@ -768,76 +823,220 @@ cancelled (キャンセル) or 契約終了
 └─────────────────────────────────────────────────────────────┘
 ```
 
+**通信フロー**:
+```
+1. ユーザー操作
+   React Component → Event Handler
+
+2. APIリクエスト送信
+   Component → Axios → HTTP Request (JSON)
+   ヘッダー: Authorization: Bearer {JWT}
+
+3. バックエンド処理
+   JAX-RS Resource → JWT Filter (認証)
+   → Service (ビジネスロジック)
+   → Repository (JPA/DB操作)
+   → HTTP Response (JSON)
+
+4. レスポンス受信・状態更新
+   Axios → React Query (キャッシュ更新)
+   → Component Re-render
+```
+
 #### 4.2.2 ディレクトリ構成
 
+**プロジェクト全体構成**:
 ```
 prototypeportal/
+├── frontend/                    # React フロントエンド
+└── backend/                     # Java EE バックエンド
+```
+
+---
+
+**frontend/ (React SPA)**:
+```
+frontend/
 ├── src/
-│   ├── app/                      # Next.js App Router
-│   │   ├── (auth)/              # 認証関連ページ
-│   │   │   ├── login/
-│   │   │   ├── register/
-│   │   │   └── reset-password/
-│   │   ├── (dashboard)/         # ダッシュボード関連
-│   │   │   ├── page.tsx         # ダッシュボード
-│   │   │   ├── contracts/       # 契約関連ページ
-│   │   │   ├── rewards/         # 報酬関連ページ
-│   │   │   ├── profile/         # プロフィール
-│   │   │   └── notifications/   # 通知
-│   │   ├── api/                 # API Routes
-│   │   │   ├── auth/
-│   │   │   ├── users/
-│   │   │   ├── contracts/
-│   │   │   ├── plans/
-│   │   │   ├── rewards/
-│   │   │   ├── notifications/
-│   │   │   └── webhooks/
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/              # Reactコンポーネント
+│   ├── pages/                   # ページコンポーネント
+│   │   ├── Login.tsx
+│   │   ├── Register.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── contracts/
+│   │   │   ├── ContractList.tsx
+│   │   │   ├── ContractNew.tsx
+│   │   │   ├── ContractDetail.tsx
+│   │   │   └── ContractConfirm.tsx
+│   │   ├── rewards/
+│   │   │   ├── RewardList.tsx
+│   │   │   └── RewardSimulation.tsx
+│   │   ├── profile/
+│   │   │   └── ProfileEdit.tsx
+│   │   └── notifications/
+│   │       └── NotificationList.tsx
+│   ├── components/              # 再利用可能コンポーネント
 │   │   ├── ui/                  # shadcn/ui コンポーネント
-│   │   ├── layouts/             # レイアウトコンポーネント
+│   │   │   ├── Button.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── Card.tsx
+│   │   │   └── ...
+│   │   ├── layouts/             # レイアウト
+│   │   │   ├── Header.tsx
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   └── DashboardLayout.tsx
 │   │   ├── features/            # 機能別コンポーネント
 │   │   │   ├── auth/
+│   │   │   │   ├── LoginForm.tsx
+│   │   │   │   └── RegisterForm.tsx
 │   │   │   ├── contracts/
-│   │   │   ├── rewards/
-│   │   │   └── dashboard/
+│   │   │   │   ├── PlanCard.tsx
+│   │   │   │   ├── OptionSelector.tsx
+│   │   │   │   └── RewardCalculator.tsx
+│   │   │   └── rewards/
+│   │   │       └── RewardChart.tsx
 │   │   └── common/              # 共通コンポーネント
-│   ├── lib/                     # ユーティリティ・ヘルパー
-│   │   ├── db/                  # データベース関連
-│   │   │   ├── prisma.ts
-│   │   │   └── redis.ts
-│   │   ├── api/                 # API クライアント
-│   │   ├── auth/                # 認証ロジック
-│   │   ├── validations/         # Zodスキーマ
-│   │   └── utils/               # 汎用ユーティリティ
-│   ├── services/                # ビジネスロジック
-│   │   ├── auth.service.ts
-│   │   ├── user.service.ts
-│   │   ├── contract.service.ts
-│   │   ├── reward.service.ts
-│   │   ├── notification.service.ts
-│   │   └── external-api.service.ts
+│   │       ├── Loading.tsx
+│   │       ├── ErrorMessage.tsx
+│   │       └── Pagination.tsx
+│   ├── api/                     # API クライアント
+│   │   ├── client.ts            # Axios インスタンス設定
+│   │   ├── auth.api.ts          # 認証API
+│   │   ├── user.api.ts          # ユーザーAPI
+│   │   ├── contract.api.ts      # 契約API
+│   │   ├── reward.api.ts        # 報酬API
+│   │   ├── plan.api.ts          # プランAPI
+│   │   └── notification.api.ts  # 通知API
+│   ├── hooks/                   # カスタムHooks
+│   │   ├── useAuth.ts
+│   │   ├── useContracts.ts
+│   │   ├── useRewards.ts
+│   │   └── usePlans.ts
+│   ├── store/                   # 状態管理（Zustand）
+│   │   ├── authStore.ts
+│   │   ├── contractStore.ts
+│   │   └── uiStore.ts
 │   ├── types/                   # TypeScript型定義
-│   │   ├── models/
-│   │   ├── api/
-│   │   └── common/
-│   └── hooks/                   # カスタムReact Hooks
-├── prisma/
-│   ├── schema.prisma            # Prismaスキーマ
-│   ├── migrations/              # マイグレーション
-│   └── seed.ts                  # シードデータ
+│   │   ├── auth.types.ts
+│   │   ├── user.types.ts
+│   │   ├── contract.types.ts
+│   │   ├── reward.types.ts
+│   │   └── api.types.ts
+│   ├── utils/                   # ユーティリティ
+│   │   ├── formatters.ts
+│   │   ├── validators.ts
+│   │   └── constants.ts
+│   ├── routes/                  # ルーティング設定
+│   │   ├── index.tsx
+│   │   └── ProtectedRoute.tsx
+│   ├── App.tsx                  # Appルート
+│   ├── main.tsx                 # エントリーポイント
+│   └── index.css                # グローバルスタイル
 ├── public/                      # 静的ファイル
+│   ├── favicon.ico
+│   └── assets/
 ├── tests/                       # テスト
 │   ├── unit/
 │   ├── integration/
 │   └── e2e/
-├── .env.example                 # 環境変数テンプレート
-├── .env.local                   # ローカル環境変数
-├── next.config.js
+├── .env.example
+├── .env.development
+├── .env.production
+├── vite.config.ts               # Vite 設定
 ├── tailwind.config.ts
 ├── tsconfig.json
 ├── package.json
+└── README.md
+```
+
+---
+
+**backend/ (Java EE)**:
+```
+backend/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── portal/
+│   │   │           ├── config/              # 設定クラス
+│   │   │           │   ├── JaxRsConfig.java
+│   │   │           │   ├── CorsFilter.java
+│   │   │           │   └── JwtConfig.java
+│   │   │           ├── model/               # エンティティ
+│   │   │           │   ├── User.java
+│   │   │           │   ├── Contract.java
+│   │   │           │   ├── Plan.java
+│   │   │           │   ├── PlanOption.java
+│   │   │           │   ├── Reward.java
+│   │   │           │   ├── Notification.java
+│   │   │           │   └── ExternalSyncLog.java
+│   │   │           ├── dto/                 # データ転送オブジェクト
+│   │   │           │   ├── request/
+│   │   │           │   │   ├── LoginRequest.java
+│   │   │           │   │   ├── RegisterRequest.java
+│   │   │           │   │   └── ContractRequest.java
+│   │   │           │   └── response/
+│   │   │           │       ├── AuthResponse.java
+│   │   │           │       ├── UserResponse.java
+│   │   │           │       └── ContractResponse.java
+│   │   │           ├── repository/          # リポジトリ
+│   │   │           │   ├── UserRepository.java
+│   │   │           │   ├── ContractRepository.java
+│   │   │           │   ├── PlanRepository.java
+│   │   │           │   ├── RewardRepository.java
+│   │   │           │   └── NotificationRepository.java
+│   │   │           ├── service/             # ビジネスロジック
+│   │   │           │   ├── AuthService.java
+│   │   │           │   ├── UserService.java
+│   │   │           │   ├── ContractService.java
+│   │   │           │   ├── RewardService.java
+│   │   │           │   ├── NotificationService.java
+│   │   │           │   └── ExternalApiService.java
+│   │   │           ├── resource/            # REST エンドポイント
+│   │   │           │   ├── AuthResource.java
+│   │   │           │   ├── UserResource.java
+│   │   │           │   ├── ContractResource.java
+│   │   │           │   ├── PlanResource.java
+│   │   │           │   ├── RewardResource.java
+│   │   │           │   ├── NotificationResource.java
+│   │   │           │   └── WebhookResource.java
+│   │   │           ├── security/            # セキュリティ
+│   │   │           │   ├── JwtAuthenticationFilter.java
+│   │   │           │   ├── JwtUtil.java
+│   │   │           │   └── PasswordEncoder.java
+│   │   │           ├── batch/               # バッチジョブ
+│   │   │           │   ├── StatusSyncJob.java
+│   │   │           │   ├── RewardAggregationJob.java
+│   │   │           │   └── NotificationJob.java
+│   │   │           ├── exception/           # 例外ハンドリング
+│   │   │           │   ├── BusinessException.java
+│   │   │           │   ├── NotFoundException.java
+│   │   │           │   └── ExceptionMapper.java
+│   │   │           └── util/                # ユーティリティ
+│   │   │               ├── DateUtil.java
+│   │   │               └── ValidationUtil.java
+│   │   └── resources/
+│   │       ├── META-INF/
+│   │       │   ├── persistence.xml          # JPA設定
+│   │       │   └── beans.xml                # CDI設定
+│   │       ├── application.properties       # アプリケーション設定
+│   │       └── db/
+│   │           └── migration/               # Flyway マイグレーション
+│   │               ├── V1__init_schema.sql
+│   │               ├── V2__add_rewards.sql
+│   │               └── V3__add_notifications.sql
+│   └── test/
+│       └── java/
+│           └── com/
+│               └── portal/
+│                   ├── service/              # サービステスト
+│                   ├── repository/           # リポジトリテスト
+│                   └── resource/             # APIテスト
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+├── pom.xml                                   # Maven設定
 └── README.md
 ```
 
@@ -847,67 +1046,154 @@ prototypeportal/
 
 ```
 1. ログイン
-   ユーザー入力 → API /api/auth/login
-   → ユーザー検証
-   → JWTトークン生成（アクセス + リフレッシュ）
-   → HTTPOnly Cookie にトークン保存
-   → クライアントへ返却
+   React (LoginForm)
+   → Axios POST /api/auth/login
+      Request Body: { email, password }
 
-2. API リクエスト
-   クライアント → API (Cookie に JWT)
-   → ミドルウェアでトークン検証
-   → ユーザー情報抽出
-   → 権限チェック
-   → ビジネスロジック実行
+   Java EE Backend:
+   → AuthResource.login()
+   → AuthService.authenticate()
+   → PasswordEncoder.verify()
+   → JwtUtil.generateTokens()
+      - Access Token (15分)
+      - Refresh Token (7日間)
+   → Response: { accessToken, refreshToken, user }
 
-3. トークンリフレッシュ
-   アクセストークン期限切れ
-   → /api/auth/refresh 呼び出し
-   → リフレッシュトークン検証
-   → 新しいアクセストークン発行
+2. トークン保存
+   React:
+   → localStorage に accessToken と refreshToken を保存
+   → authStore に ユーザー情報を保存
+   → AxiosInstance の interceptor に Authorization ヘッダー設定
+
+3. 認証済みAPIリクエスト
+   React:
+   → Axios GET /api/users/me
+      Header: Authorization: Bearer {accessToken}
+
+   Java EE Backend:
+   → JwtAuthenticationFilter (ContainerRequestFilter)
+   → JwtUtil.validateToken()
+   → SecurityContext に Principal 設定
+   → UserResource.getCurrentUser()
+   → Response: { user data }
+
+4. トークンリフレッシュ
+   Axios Interceptor (Response 401検知):
+   → POST /api/auth/refresh
+      Body: { refreshToken }
+
+   Java EE Backend:
+   → AuthService.refreshToken()
+   → JwtUtil.validateRefreshToken()
+   → JwtUtil.generateNewAccessToken()
+   → Response: { accessToken }
+
+   React:
+   → localStorage 更新
+   → 元のリクエストを再実行
+
+5. ログアウト
+   React:
+   → localStorage クリア
+   → authStore リセット
+   → ログインページへリダイレクト
 ```
 
-#### 4.3.2 外部API連携のセキュリティ
+#### 4.3.2 CORS設定
 
-- **API Key管理**: 環境変数で管理、リポジトリにコミットしない
+```java
+// CorsFilter.java
+@Provider
+public class CorsFilter implements ContainerResponseFilter {
+    @Override
+    public void filter(RequestContext req, ResponseContext res) {
+        res.getHeaders().add("Access-Control-Allow-Origin",
+            "http://localhost:5173"); // React dev server
+        res.getHeaders().add("Access-Control-Allow-Headers",
+            "Authorization, Content-Type");
+        res.getHeaders().add("Access-Control-Allow-Methods",
+            "GET, POST, PUT, DELETE, OPTIONS");
+    }
+}
+```
+
+#### 4.3.3 外部API連携のセキュリティ
+
+- **API Key管理**: application.properties / 環境変数で管理
 - **通信の暗号化**: HTTPS/TLS 1.3以上
 - **リクエスト署名**: HMAC-SHA256での署名検証
-- **IPホワイトリスト**: 承認システムとの通信を特定IPに制限
-- **レート制限**: Redis を使用したレート制限実装
-- **タイムアウト設定**: 外部API呼び出しに適切なタイムアウト設定
+- **タイムアウト設定**: JAX-RS Client の適切なタイムアウト設定
+- **リトライメカニズム**: エクスポネンシャルバックオフ実装
 
 ### 4.4 パフォーマンス最適化
 
-#### 4.4.1 フロントエンド最適化
+#### 4.4.1 フロントエンド最適化（React + Vite）
 
-- **コード分割**: Next.js の dynamic import 活用
-- **画像最適化**: Next.js Image コンポーネント使用
+- **コード分割**:
+  - React.lazy() による動的インポート
+  - Route-based code splitting
+  ```typescript
+  const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+  ```
+- **ビルド最適化**:
+  - Vite のTree-shaking
+  - 本番ビルドでの圧縮・最小化
 - **キャッシング**:
-  - React Query でサーバーデータキャッシュ
-  - SWR パターンでデータ更新
+  - React Query でサーバーデータキャッシュ（staleTime, cacheTime設定）
+  - LocalStorage でオフラインデータ保持
 - **レンダリング最適化**:
-  - Server Components 活用
-  - クライアントコンポーネントは必要最小限に
+  - React.memo() による不要な再レンダリング防止
+  - useMemo(), useCallback() の活用
+  - Virtualization (react-window) for 長いリスト
+- **バンドルサイズ最適化**:
+  - date-fns は必要な関数のみimport
+  - lodash/esのようなESM版を使用
 
-#### 4.4.2 バックエンド最適化
+#### 4.4.2 バックエンド最適化（Java EE）
 
 - **データベースクエリ最適化**:
-  - インデックス設定
+  - インデックス設定（email, external_approval_id等）
   - N+1問題の回避
-  - Prisma の include/select 最適化
-- **API レスポンスキャッシング**:
-  - Redis でキャッシュ
-  - 適切な TTL 設定
+    ```java
+    @NamedEntityGraph(name = "Contract.withUser",
+        attributeNodes = @NamedAttributeNode("user"))
+    ```
+  - Fetch Strategy の適切な設定（LAZY/EAGER）
+  - JPQL/Criteria API の最適化
+- **コネクションプール**:
+  - HikariCP の設定最適化
+  ```properties
+  maximumPoolSize=20
+  minimumIdle=5
+  connectionTimeout=30000
+  ```
+- **キャッシング**:
+  - JPA 2nd Level Cache (Hibernate + Ehcache)
+  - CDI @CachedResult アノテーション活用
 - **非同期処理**:
-  - メール送信は非同期キューで処理
-  - 外部API呼び出しのタイムアウト処理
+  - @Asynchronous でメール送信処理
+  - Jakarta Batch でバッチ処理
+  - CompletableFuture の活用
+- **レスポンス最適化**:
+  - GZIP compression 有効化
+  - JSON-B の効率的なシリアライゼーション
 
 ### 4.5 スケーラビリティ
 
-- **水平スケーリング**: Vercel の自動スケーリング活用
-- **データベース**: コネクションプーリング設定
-- **キャッシュ戦略**: Redis クラスター化（必要に応じて）
-- **CDN活用**: 静的ファイルのCDN配信
+- **フロントエンド**:
+  - CDN配信 (CloudFront, Cloudflare)
+  - 静的ファイルの積極的なキャッシング
+- **バックエンド**:
+  - 水平スケーリング: 複数のアプリケーションサーバーインスタンス
+  - ロードバランサー (AWS ALB, Nginx)
+  - Stateless設計 (JWT認証)
+- **データベース**:
+  - Read Replica の活用
+  - コネクションプーリング設定
+  - パーティショニング（将来的）
+- **監視・オートスケーリング**:
+  - メトリクス監視（CPU、メモリ、レスポンスタイム）
+  - Auto Scaling Group (AWS) の設定
 
 ---
 
@@ -915,115 +1201,140 @@ prototypeportal/
 
 ### 5.1 実装フェーズ
 
-#### Phase 0: プロジェクトセットアップ（1-2日）
-**目標**: 開発環境の構築と基本設定
+#### Phase 0: プロジェクトセットアップ（2-3日）
+**目標**: フロントエンド・バックエンド開発環境の構築と基本設定
 
-**タスク**:
-1. Next.js プロジェクト初期化
-   - `pnpm create next-app@latest`
-   - TypeScript, Tailwind CSS, App Router 有効化
-2. 開発ツール設定
-   - ESLint, Prettier 設定
-   - Husky + lint-staged 設定
-3. 依存パッケージインストール
-   - UI: shadcn/ui
+**フロントエンド（React）タスク**:
+1. React プロジェクト初期化
+   - `npm create vite@latest frontend -- --template react-ts`
+   - TypeScript, Vite 設定
+2. 依存パッケージインストール
+   - UI: shadcn/ui, tailwindcss
+   - ルーティング: react-router-dom
    - 状態管理: zustand, @tanstack/react-query
    - フォーム: react-hook-form, zod
-   - ORM: Prisma
-   - 認証: next-auth
-4. ディレクトリ構成作成
-5. 環境変数設定（.env.example 作成）
-6. Git リポジトリ設定
+   - HTTP: axios
+3. ディレクトリ構成作成
+4. 環境変数設定（.env.example 作成）
+5. ESLint, Prettier 設定
+
+**バックエンド（Java EE）タスク**:
+1. Maven プロジェクト作成
+   - Jakarta EE 10 / Java 17 設定
+   - pom.xml 依存関係設定
+     - JAX-RS, JPA, CDI, Bean Validation
+     - PostgreSQL Driver, JWT Library
+     - Flyway / Liquibase
+2. ディレクトリ構成作成
+3. application.properties 設定
+4. persistence.xml, beans.xml 設定
+5. Docker Compose 設定（PostgreSQL起動用）
 
 **成果物**:
-- プロジェクト骨格
+- frontend/ ディレクトリ
+- backend/ ディレクトリ
+- docker-compose.yml
 - README.md
-- .env.example
-- 開発環境設定ファイル
 
 ---
 
-#### Phase 1: データベース・認証基盤（3-4日）
-**目標**: データベーススキーマと認証機能の実装
+#### Phase 1: データベース・バックエンド基盤（4-5日）
+**目標**: データベーススキーマとバックエンド基盤の実装
 
-**タスク**:
-1. **Prisma スキーマ定義**
-   - users テーブル
-   - plans テーブル
-   - contracts テーブル
-   - rewards テーブル
-   - notifications テーブル
-   - external_sync_logs テーブル
-2. **マイグレーション実行**
-   - `npx prisma migrate dev`
-3. **シードデータ作成**
-   - サンプルプラン・オプションデータ
-   - テスト用ユーザー
-4. **NextAuth.js 設定**
-   - Credentials Provider 設定
-   - JWT 設定
-   - セッション管理
-5. **認証API実装**
+**バックエンドタスク**:
+1. **JPA エンティティ定義**
+   - User.java
+   - Plan.java, PlanOption.java
+   - Contract.java, ContractOption.java
+   - Reward.java
+   - Notification.java
+   - ExternalSyncLog.java
+2. **Flyway マイグレーション作成**
+   - V1__init_schema.sql (users, plans, contracts等)
+   - V2__add_rewards.sql
+   - V3__add_notifications.sql
+3. **Repository層実装**
+   - UserRepository, ContractRepository, etc.
+   - JPQL クエリメソッド
+4. **認証・セキュリティ実装**
+   - JwtUtil.java (JWT生成・検証)
+   - PasswordEncoder.java (BCrypt)
+   - JwtAuthenticationFilter.java
+   - CorsFilter.java
+5. **AuthResource/AuthService実装**
    - POST /api/auth/register
    - POST /api/auth/login
-   - POST /api/auth/logout
+   - POST /api/auth/refresh
    - POST /api/auth/password-reset
-6. **認証ミドルウェア実装**
-   - JWT検証ミドルウェア
-   - 認証保護ルート設定
+6. **シードデータ作成**
+   - テスト用ユーザー
+   - サンプルプラン・オプション
 
 **成果物**:
-- Prisma スキーマファイル
-- マイグレーションファイル
-- 認証API
-- 認証ミドルウェア
+- JPA エンティティクラス
+- Flyway マイグレーションSQL
+- Repository クラス
+- 認証機能（JWT）
+- CORSフィルター
 
 ---
 
-#### Phase 2: 基本UI・レイアウト（2-3日）
-**目標**: 共通UIコンポーネントとレイアウトの実装
+#### Phase 2: フロントエンド基本UI・認証（3-4日）
+**目標**: React 共通UIとコンポーネント、認証機能の実装
 
-**タスク**:
+**フロントエンドタスク**:
 1. **shadcn/ui コンポーネント導入**
    - Button, Input, Card, Table など
-2. **共通レイアウト実装**
-   - ヘッダーコンポーネント
-   - サイドバーナビゲーション
-   - フッター
-3. **認証ページ実装**
-   - LP-001: ログインページ
-   - LP-002: 会員登録ページ
-   - LP-003: パスワードリセットページ
-4. **レスポンシブ対応**
-5. **ローディング・エラー状態**
+2. **API クライアント実装**
+   - axios インスタンス設定 (client.ts)
+   - auth.api.ts (ログイン、登録API呼び出し)
+   - Interceptor (JWT自動付与、リフレッシュ処理)
+3. **認証状態管理**
+   - authStore.ts (Zustand)
+   - useAuth hook
+4. **ルーティング設定**
+   - React Router 設定
+   - ProtectedRoute コンポーネント
+5. **認証ページ実装**
+   - Login.tsx
+   - Register.tsx
+   - LoginForm, RegisterForm components
+6. **共通レイアウト**
+   - Header.tsx, Sidebar.tsx
+   - DashboardLayout.tsx
 
 **成果物**:
-- 認証画面（ログイン、登録、パスワードリセット）
-- 共通レイアウトコンポーネント
-- UIコンポーネントライブラリ
+- 認証画面（ログイン、登録）
+- API クライアント
+- 認証状態管理
+- 共通レイアウト
 
 ---
 
-#### Phase 3: ダッシュボード・会員機能（3-4日）
+#### Phase 3: ダッシュボード・会員機能（4-5日）
 **目標**: ダッシュボードとプロフィール管理機能の実装
 
-**タスク**:
-1. **会員情報API実装**
+**バックエンド**:
+1. UserResource/UserService実装
    - GET /api/users/me
    - PUT /api/users/me
    - GET /api/users/me/summary
-2. **ダッシュボード実装（DH-001）**
+2. NotificationResource/Service実装
+   - GET /api/notifications
+   - PUT /api/notifications/:id/read
+
+**フロントエンド**:
+1. API クライアント追加
+   - user.api.ts, notification.api.ts
+2. Dashboard.tsx 実装
    - 報酬サマリーカード
    - 契約ステータスカード
    - お知らせリスト
    - クイックアクション
-3. **プロフィール編集ページ（PR-001）**
-   - フォーム実装
-   - バリデーション
-4. **通知機能**
-   - 通知一覧ページ（NT-001）
-   - 通知API実装
-   - リアルタイム通知表示
+3. ProfileEdit.tsx 実装
+   - フォーム (React Hook Form)
+   - バリデーション (Zod)
+4. NotificationList.tsx 実装
 
 **成果物**:
 - ダッシュボード画面
@@ -1033,37 +1344,37 @@ prototypeportal/
 
 ---
 
-#### Phase 4: プラン・契約申し込み機能（5-6日）
+#### Phase 4: プラン・契約申し込み機能（6-7日）
 **目標**: 契約申し込みの中核機能実装
 
-**タスク**:
-1. **プランAPI実装**
-   - GET /api/plans（プラン一覧）
-   - GET /api/plans/:id（プラン詳細）
-   - GET /api/plans/:id/options（オプション一覧）
-   - POST /api/plans/simulate-reward（報酬シミュレーション）
-2. **契約API実装**
-   - POST /api/contracts（契約作成）
-   - GET /api/contracts（契約一覧）
-   - GET /api/contracts/:id（契約詳細）
-   - PUT /api/contracts/:id（契約更新）
-   - POST /api/contracts/:id/submit（契約送信）
-3. **プラン一覧ページ（PL-001）**
-4. **プラン詳細ページ（PL-002）**
-5. **契約申し込みフォーム（CT-001）**
-   - Step 1: プラン選択
-   - Step 2: オプション選択
-   - Step 3: 申し込み情報入力
-   - リアルタイム報酬計算
-6. **契約内容確認ページ（CT-002）**
-7. **契約完了ページ（CT-003）**
-8. **契約一覧ページ（CT-004）**
-9. **契約詳細ページ（CT-005）**
+**バックエンド**:
+1. PlanResource/PlanService実装
+   - GET /api/plans
+   - GET /api/plans/:id
+   - GET /api/plans/:id/options
+   - POST /api/plans/simulate-reward
+2. ContractResource/ContractService実装
+   - POST /api/contracts
+   - GET /api/contracts
+   - GET /api/contracts/:id
+   - PUT /api/contracts/:id
+   - POST /api/contracts/:id/submit
+3. RewardService実装
+   - 報酬計算ロジック
+
+**フロントエンド**:
+1. API クライアント (plan.api.ts, contract.api.ts)
+2. ContractNew.tsx（マルチステップフォーム）
+   - Step 1: プラン選択 (PlanCard component)
+   - Step 2: オプション選択 (OptionSelector)
+   - Step 3: 情報入力
+   - RewardCalculator component
+3. ContractConfirm.tsx（確認画面）
+4. ContractList.tsx, ContractDetail.tsx
 
 **成果物**:
-- プラン表示機能
+- プラン・契約API
 - 契約申し込みフロー（全画面）
-- 契約管理API
 - 報酬計算ロジック
 
 ---
@@ -1265,7 +1576,9 @@ prototypeportal/
 - **Phase 9**: 2日
 - **Phase 10**: 1-2日
 
-**合計**: 28-38日（約1.5-2ヶ月）
+**合計**: 32-45日（約1.5-2ヶ月）
+
+※ React + Java EE の分離構成のため、Next.jsより若干日数増
 
 ### 5.4 リスクと対策
 
@@ -1293,3 +1606,4 @@ prototypeportal/
 - 2025-11-09: 詳細仕様追加（データ仕様、API仕様、画面仕様、ビジネスロジック）
 - 2025-11-09: アーキテクチャ追加（技術スタック、システム構成、セキュリティ設計）
 - 2025-11-09: 実装計画追加（Phase 0-10、スケジュール、リスク対策）
+- 2025-11-09: **アーキテクチャ大幅変更**：Next.jsフルスタック → React SPA + Java EE 分離構成
