@@ -144,10 +144,13 @@ mvn package
 ```bash
 cd frontend
 
-npm run dev          # 開発サーバー起動
-npm run build        # 本番用ビルド
-npm run preview      # ビルド結果のプレビュー
-npm run lint         # ESLint 実行
+npm run dev              # 開発サーバー起動
+npm run build            # 本番用ビルド
+npm run preview          # ビルド結果のプレビュー
+npm run lint             # ESLint 実行
+npm run test             # テスト実行（watch モード）
+npm run test:run         # テスト実行（1回のみ）
+npm run test:coverage    # カバレッジ付きテスト実行
 ```
 
 ### バックエンド
@@ -155,10 +158,12 @@ npm run lint         # ESLint 実行
 ```bash
 cd backend
 
-mvn clean install    # ビルド
-mvn test             # テスト実行
-mvn package          # WAR ファイル作成
-mvn flyway:migrate   # DB マイグレーション実行
+mvn clean install        # ビルド
+mvn test                 # ユニットテスト実行
+mvn verify               # 統合テスト含む全テスト実行
+mvn test -Dtest=ClassName # 特定のテストクラスを実行
+mvn package              # WAR ファイル作成
+mvn flyway:migrate       # DB マイグレーション実行
 ```
 
 ### データベース
@@ -187,6 +192,47 @@ docker-compose up -d
 **次のステップ**: Phase 1（データベース設計とマイグレーション）
 
 詳細は [SPEC.md](./SPEC.md) の「5. 実装計画」を参照してください。
+
+## TDD（テスト駆動開発）
+
+本プロジェクトでは**テスト駆動開発（TDD）**を採用しています。すべての機能実装は以下のサイクルで進めます：
+
+### TDDサイクル
+
+```
+1. Red    -> テストを書く（失敗することを確認）
+2. Green  -> テストが通る最小限のコードを書く
+3. Refactor -> コードをリファクタリングする
+```
+
+### テスト環境
+
+#### フロントエンド
+- **Vitest**: ユニットテスト実行
+- **React Testing Library**: コンポーネントテスト
+- **Mock Service Worker (MSW)**: API モック
+
+#### バックエンド
+- **JUnit 5**: ユニットテスト
+- **Mockito**: モック作成
+- **Arquillian**: 統合テスト
+- **TestContainers**: データベーステスト
+
+### テストカバレッジ目標
+
+- **行カバレッジ**: 80%以上
+- **分岐カバレッジ**: 75%以上
+- **ビジネスロジック**: 100%
+
+### TDD開発フロー
+
+1. 機能要件を理解し、受け入れ条件を明確化
+2. テストケースを先に実装（Red）
+3. テストが通る最小限の実装（Green）
+4. コードをリファクタリング（Refactor）
+5. テストと実装を一緒にコミット
+
+詳細なTDD戦略とガイドラインは [SPEC.md](./SPEC.md) の「6. 開発方針・プラクティス」を参照してください。
 
 ## トラブルシューティング
 

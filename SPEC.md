@@ -1605,6 +1605,313 @@ public class CorsFilter implements ContainerResponseFilter {
 
 ---
 
+## 6. 開発方針・プラクティス
+
+### 6.1 TDD（Test-Driven Development）採用
+
+本プロジェクトではテスト駆動開発（TDD）を採用し、すべての機能実装において**テストファースト**のアプローチを徹底する。
+
+#### 6.1.1 TDDの基本サイクル
+
+```
+1. Red   -> テストを書く（失敗することを確認）
+2. Green -> テストが通る最小限のコードを書く
+3. Refactor -> コードをリファクタリングする
+```
+
+#### 6.1.2 フロントエンド（React）テスト戦略
+
+**テストツール構成**:
+- **Vitest**: 高速なユニットテスト実行環境（Viteとの統合）
+- **React Testing Library**: ユーザー視点のコンポーネントテスト
+- **Mock Service Worker (MSW)**: API モック
+- **@testing-library/user-event**: ユーザーインタラクションのシミュレーション
+
+**テストの種類と対象**:
+
+1. **ユニットテスト**
+   - ユーティリティ関数
+   - カスタムフック
+   - 状態管理（Zustand store）
+   - バリデーションロジック
+
+2. **コンポーネントテスト**
+   - UIコンポーネントのレンダリング
+   - ユーザーインタラクション（クリック、入力）
+   - 条件付きレンダリング
+   - プロパティの変更に対する動作
+
+3. **統合テスト**
+   - APIクライアントとの統合
+   - ルーティング動作
+   - 認証フロー
+   - フォーム送信
+
+**テストファイル構成**:
+```
+src/
+├── components/
+│   ├── Button.tsx
+│   └── Button.test.tsx
+├── features/
+│   ├── auth/
+│   │   ├── LoginForm.tsx
+│   │   └── LoginForm.test.tsx
+├── services/
+│   ├── auth.service.ts
+│   └── auth.service.test.ts
+└── store/
+    ├── auth.ts
+    └── auth.test.ts
+```
+
+**テストカバレッジ目標**:
+- **行カバレッジ**: 80%以上
+- **分岐カバレッジ**: 75%以上
+- **関数カバレッジ**: 80%以上
+- **重要なビジネスロジック**: 100%
+
+#### 6.1.3 バックエンド（Java EE）テスト戦略
+
+**テストツール構成**:
+- **JUnit 5**: Javaテストフレームワーク
+- **Mockito**: モック・スタブ作成
+- **Arquillian**: Jakarta EE統合テスト
+- **AssertJ**: 流暢なアサーション
+- **TestContainers**: PostgreSQLコンテナテスト
+
+**テストの種類と対象**:
+
+1. **ユニットテスト**
+   - サービス層のビジネスロジック
+   - DTOのマッピング
+   - バリデーションロジック
+   - ユーティリティクラス
+
+2. **統合テスト**
+   - リポジトリ層（JPA）のデータアクセス
+   - データベーストランザクション
+   - REST APIエンドポイント（JAX-RS）
+   - 認証・認可（JWT）
+
+3. **E2Eテスト**（Arquillian使用）
+   - アプリケーション全体の動作確認
+   - 複数レイヤーにまたがるフロー
+   - 外部システム連携（モック）
+
+**テストファイル構成**:
+```
+backend/src/test/java/com/prototypeportal/
+├── service/
+│   ├── AuthServiceTest.java
+│   └── ContractServiceTest.java
+├── repository/
+│   ├── UserRepositoryTest.java
+│   └── ContractRepositoryTest.java
+├── resource/
+│   ├── AuthResourceTest.java
+│   └── ContractResourceTest.java
+└── integration/
+    └── ContractFlowIT.java
+```
+
+**テストカバレッジ目標**:
+- **行カバレッジ**: 80%以上
+- **分岐カバレッジ**: 75%以上
+- **ビジネスロジック**: 100%
+- **重要なトランザクション**: 100%
+
+#### 6.1.4 TDD開発フロー
+
+**新機能実装の標準フロー**:
+
+1. **要件理解**
+   - 機能仕様を確認
+   - 受け入れ条件を明確化
+   - エッジケースを洗い出す
+
+2. **テスト作成（Red）**
+   - テストケースを先に実装
+   - 失敗することを確認
+   - エッジケース・エラーケースも含める
+
+3. **実装（Green）**
+   - テストが通る最小限のコードを実装
+   - 余分な機能は追加しない
+   - 全テストが通ることを確認
+
+4. **リファクタリング（Refactor）**
+   - コードの可読性向上
+   - 重複の排除
+   - パフォーマンス最適化
+   - テストが通り続けることを確認
+
+5. **コミット**
+   - 意味のある単位でコミット
+   - テストと実装を一緒にコミット
+
+**実装例（フロントエンド - ログインフォーム）**:
+
+```typescript
+// 1. テストを書く（Red）
+describe('LoginForm', () => {
+  it('should submit valid credentials', async () => {
+    const onSubmit = vi.fn();
+    render(<LoginForm onSubmit={onSubmit} />);
+
+    await userEvent.type(screen.getByLabelText('Email'), 'test@example.com');
+    await userEvent.type(screen.getByLabelText('Password'), 'password123');
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+
+    expect(onSubmit).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      password: 'password123',
+    });
+  });
+
+  it('should show validation errors for invalid email', async () => {
+    render(<LoginForm onSubmit={vi.fn()} />);
+
+    await userEvent.type(screen.getByLabelText('Email'), 'invalid-email');
+    await userEvent.click(screen.getByRole('button', { name: 'Login' }));
+
+    expect(screen.getByText('Invalid email format')).toBeInTheDocument();
+  });
+});
+
+// 2. 実装を書く（Green）
+// 3. リファクタリング（Refactor）
+```
+
+**実装例（バックエンド - ユーザー登録サービス）**:
+
+```java
+// 1. テストを書く（Red）
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
+    private UserService userService;
+
+    @Test
+    void shouldRegisterNewUser() {
+        // Given
+        UserRegistrationDto dto = new UserRegistrationDto(
+            "test@example.com", "password123", "Test User"
+        );
+
+        when(userRepository.findByEmail(dto.getEmail()))
+            .thenReturn(Optional.empty());
+
+        // When
+        User user = userService.register(dto);
+
+        // Then
+        assertThat(user.getEmail()).isEqualTo("test@example.com");
+        assertThat(user.getName()).isEqualTo("Test User");
+        verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEmailAlreadyExists() {
+        // Given
+        UserRegistrationDto dto = new UserRegistrationDto(
+            "existing@example.com", "password123", "Test User"
+        );
+
+        when(userRepository.findByEmail(dto.getEmail()))
+            .thenReturn(Optional.of(new User()));
+
+        // When & Then
+        assertThatThrownBy(() -> userService.register(dto))
+            .isInstanceOf(EmailAlreadyExistsException.class)
+            .hasMessage("Email already registered");
+    }
+}
+
+// 2. 実装を書く（Green）
+// 3. リファクタリング（Refactor）
+```
+
+#### 6.1.5 CI/CDパイプラインでのテスト自動化
+
+**GitHub Actions / GitLab CI 構成**:
+```yaml
+test:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Frontend Tests
+      run: |
+        cd frontend
+        npm install
+        npm run test:coverage
+
+    - name: Backend Tests
+      run: |
+        cd backend
+        mvn test
+        mvn verify
+
+    - name: Upload Coverage
+      uses: codecov/codecov-action@v3
+```
+
+**必須チェック**:
+- すべてのテストが通ること
+- カバレッジ目標を達成していること
+- Lintエラーがないこと
+- ビルドが成功すること
+
+#### 6.1.6 TDDのメリット
+
+本プロジェクトでTDDを採用する理由:
+
+1. **品質向上**
+   - バグの早期発見
+   - リグレッションの防止
+   - 仕様の明確化
+
+2. **設計改善**
+   - テスタビリティの高いコード
+   - 疎結合な設計
+   - インターフェース駆動開発
+
+3. **ドキュメント効果**
+   - テストが仕様書として機能
+   - 使用例の明示
+   - 保守性の向上
+
+4. **リファクタリングの安全性**
+   - テストによる保護
+   - 変更への自信
+   - 技術的負債の削減
+
+5. **開発速度の向上**
+   - デバッグ時間の削減
+   - 手動テストの削減
+   - 継続的な品質保証
+
+### 6.2 コードレビュー・プラクティス
+
+- プルリクエスト必須
+- 最低1名のレビュー承認
+- テストカバレッジの確認
+- コーディング規約の遵守
+
+### 6.3 ドキュメント管理
+
+- コードコメントは「なぜ」を説明
+- README/SPEC.mdの継続的更新
+- API仕様はOpenAPI/Swagger化
+- ADR（Architecture Decision Records）の記録
+
+---
+
 **ドキュメント履歴**
 - 2025-11-09: 初版作成（目的定義）
 - 2025-11-09: 要件定義追加（機能要件・非機能要件）
@@ -1615,3 +1922,4 @@ public class CorsFilter implements ContainerResponseFilter {
 - 2025-11-09: **アーキテクチャ大幅変更**：Next.jsフルスタック → React SPA + Java EE 分離構成
 - 2025-11-10: **アーキテクチャ選択理由を追加**：技術選定の背景、代替案比較、メリット・デメリット分析
 - 2025-11-10: **ドキュメント整理**：アーキテクチャ選定理由を別ファイル（ARCHITECTURE.md）に分離
+- 2025-11-10: **TDD開発方針の追加**：テスト駆動開発のガイドライン、テスト戦略、カバレッジ目標を明記
