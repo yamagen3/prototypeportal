@@ -84,7 +84,6 @@ public class PlanResource {
             .ok(ApiResponse.success(options))
             .build();
     }
-}
 
     /**
      * 報酬シミュレーション

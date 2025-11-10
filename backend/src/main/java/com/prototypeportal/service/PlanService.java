@@ -82,7 +82,6 @@ public class PlanService {
 
         return PlanOptionResponseDto.fromEntity(option);
     }
-}
 
     /**
      * 報酬をシミュレート
