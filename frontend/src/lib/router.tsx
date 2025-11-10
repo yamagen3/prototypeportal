@@ -3,17 +3,17 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Login } from '../pages/auth/Login';
 import { Register } from '../pages/auth/Register';
+import { Dashboard } from '../pages/Dashboard';
+import { Profile } from '../pages/Profile';
 
 /**
  * ルーター設定
  */
 
 // 仮のコンポーネント（後で実装）
-const DashboardPage = () => <div>Dashboard Page - 実装予定</div>;
 const ContractNewPage = () => <div>New Contract Page - 実装予定</div>;
 const ContractListPage = () => <div>Contract List Page - 実装予定</div>;
 const RewardPage = () => <div>Reward Page - 実装予定</div>;
-const ProfilePage = () => <div>Profile Page - 実装予定</div>;
 
 export const router = createBrowserRouter([
   {
@@ -38,7 +38,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: 'dashboard',
-        element: <DashboardPage />,
+        element: <Dashboard />,
       },
       {
         path: 'contracts',
@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'profile',
-        element: <ProfilePage />,
+        element: <Profile />,
       },
     ],
   },

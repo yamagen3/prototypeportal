@@ -3,13 +3,22 @@
  */
 
 // ユーザー関連
+// ユーザー関連
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role?: UserRole;
+  companyName?: string;
+  department?: string;
+  phone?: string;
+  postalCode?: string;
+  address?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export type UserRole = 'MEMBER' | 'ADMIN';
 }
 
 export type UserRole = 'MEMBER' | 'ADMIN';
