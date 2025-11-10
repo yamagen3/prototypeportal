@@ -1,9 +1,9 @@
 package com.prototypeportal.resource;
 
-import com.prototypeportal.dto.PlanOptionResponseDto;
-import com.prototypeportal.dto.PlanResponseDto;
+import com.prototypeportal.dto.*;
 import com.prototypeportal.service.PlanService;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -82,6 +82,22 @@ public class PlanResource {
         List<PlanOptionResponseDto> options = planService.findActiveOptionsByPlanId(id);
         return Response
             .ok(ApiResponse.success(options))
+            .build();
+    }
+}
+
+    /**
+     * 報酬シミュレーション
+     *
+     * @param dto シミュレーションリクエスト
+     * @return シミュレーション結果
+     */
+    @POST
+    @Path("/simulate-reward")
+    public Response simulateReward(@Valid RewardSimulationRequestDto dto) {
+        RewardSimulationResponseDto result = planService.simulateReward(dto);
+        return Response
+            .ok(ApiResponse.success(result))
             .build();
     }
 }

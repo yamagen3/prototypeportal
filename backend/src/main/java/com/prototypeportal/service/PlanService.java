@@ -1,7 +1,6 @@
 package com.prototypeportal.service;
 
-import com.prototypeportal.dto.PlanOptionResponseDto;
-import com.prototypeportal.dto.PlanResponseDto;
+import com.prototypeportal.dto.*;
 import com.prototypeportal.entity.Plan;
 import com.prototypeportal.entity.PlanOption;
 import com.prototypeportal.exception.ResourceNotFoundException;
@@ -13,6 +12,8 @@ import jakarta.transaction.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -80,5 +81,52 @@ public class PlanService {
             .orElseThrow(() -> new ResourceNotFoundException("PlanOption", optionId.toString()));
 
         return PlanOptionResponseDto.fromEntity(option);
+    }
+}
+
+    /**
+     * 報酬をシミュレート
+     */
+    public RewardSimulationResponseDto simulateReward(RewardSimulationRequestDto dto) {
+        // プランの存在確認
+        Plan plan = planRepository.findById(dto.getPlanId())
+            .orElseThrow(() -> new ResourceNotFoundException("Plan", dto.getPlanId().toString()));
+
+        List<RewardSimulationOptionResultDto> optionResults = new ArrayList<>();
+        BigDecimal totalOptionsReward = BigDecimal.ZERO;
+
+        // 各オプションの報酬を計算
+        if (dto.getOptions() != null && !dto.getOptions().isEmpty()) {
+            for (RewardSimulationOptionDto optionDto : dto.getOptions()) {
+                PlanOption planOption = planOptionRepository.findById(optionDto.getPlanOptionId())
+                    .orElseThrow(() -> new ResourceNotFoundException("PlanOption", optionDto.getPlanOptionId().toString()));
+
+                BigDecimal totalReward = planOption.getRewardAmount()
+                    .multiply(BigDecimal.valueOf(optionDto.getQuantity()));
+
+                RewardSimulationOptionResultDto resultDto = RewardSimulationOptionResultDto.builder()
+                    .planOptionId(planOption.getId())
+                    .optionName(planOption.getOptionName())
+                    .quantity(optionDto.getQuantity())
+                    .unitReward(planOption.getRewardAmount())
+                    .totalReward(totalReward)
+                    .build();
+
+                optionResults.add(resultDto);
+                totalOptionsReward = totalOptionsReward.add(totalReward);
+            }
+        }
+
+        // 合計報酬を計算
+        BigDecimal totalReward = plan.getBaseReward().add(totalOptionsReward);
+
+        return RewardSimulationResponseDto.builder()
+            .planId(plan.getId())
+            .planName(plan.getPlanName())
+            .planBaseReward(plan.getBaseReward())
+            .options(optionResults)
+            .totalOptionsReward(totalOptionsReward)
+            .totalReward(totalReward)
+            .build();
     }
 }
