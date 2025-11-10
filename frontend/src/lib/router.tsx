@@ -5,14 +5,13 @@ import { Login } from '../pages/auth/Login';
 import { Register } from '../pages/auth/Register';
 import { Dashboard } from '../pages/Dashboard';
 import { Profile } from '../pages/Profile';
+import { ContractNew } from '../pages/contracts/ContractNew';
+import { ContractList } from '../pages/contracts/ContractList';
 
 /**
  * ルーター設定
  */
 
-// 仮のコンポーネント（後で実装）
-const ContractNewPage = () => <div>New Contract Page - 実装予定</div>;
-const ContractListPage = () => <div>Contract List Page - 実装予定</div>;
 const RewardPage = () => <div>Reward Page - 実装予定</div>;
 
 export const router = createBrowserRouter([
@@ -45,11 +44,11 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <ContractListPage />,
+            element: <ContractList />,
           },
           {
             path: 'new',
-            element: <ContractNewPage />,
+            element: <ContractNew />,
           },
         ],
       },
