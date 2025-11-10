@@ -1,17 +1,19 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from '../components/ProtectedRoute';
+import { DashboardLayout } from '../components/layout/DashboardLayout';
+import { Login } from '../pages/auth/Login';
+import { Register } from '../pages/auth/Register';
 
 /**
  * ルーター設定
  */
 
 // 仮のコンポーネント（後で実装）
-const LoginPage = () => <div>Login Page</div>;
-const RegisterPage = () => <div>Register Page</div>;
-const DashboardPage = () => <div>Dashboard Page</div>;
-const ContractNewPage = () => <div>New Contract Page</div>;
-const ContractListPage = () => <div>Contract List Page</div>;
-const RewardPage = () => <div>Reward Page</div>;
-const ProfilePage = () => <div>Profile Page</div>;
+const DashboardPage = () => <div>Dashboard Page - 実装予定</div>;
+const ContractNewPage = () => <div>New Contract Page - 実装予定</div>;
+const ContractListPage = () => <div>Contract List Page - 実装予定</div>;
+const RewardPage = () => <div>Reward Page - 実装予定</div>;
+const ProfilePage = () => <div>Profile Page - 実装予定</div>;
 
 export const router = createBrowserRouter([
   {
@@ -20,36 +22,46 @@ export const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <LoginPage />,
+    element: <Login />,
   },
   {
     path: '/register',
-    element: <RegisterPage />,
+    element: <Register />,
   },
   {
-    path: '/dashboard',
-    element: <DashboardPage />,
-  },
-  {
-    path: '/contracts',
+    path: '/',
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
-        index: true,
-        element: <ContractListPage />,
+        path: 'dashboard',
+        element: <DashboardPage />,
       },
       {
-        path: 'new',
-        element: <ContractNewPage />,
+        path: 'contracts',
+        children: [
+          {
+            index: true,
+            element: <ContractListPage />,
+          },
+          {
+            path: 'new',
+            element: <ContractNewPage />,
+          },
+        ],
+      },
+      {
+        path: 'rewards',
+        element: <RewardPage />,
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
       },
     ],
-  },
-  {
-    path: '/rewards',
-    element: <RewardPage />,
-  },
-  {
-    path: '/profile',
-    element: <ProfilePage />,
   },
   {
     path: '*',
